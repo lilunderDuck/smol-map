@@ -23,16 +23,15 @@ type MemberMapping struct {
 	Names      []string
 }
 
-func ParseTiny(file string) (*Mapping, error) {
+func DetectForTinyV1(file string, scannerOut *bufio.Scanner) error {
 	r, err := os.Open(file)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	scanner := bufio.NewScanner(r)
-
 	if !scanner.Scan() {
-		return nil, fmt.Errorf("empty mapping file")
+		return fmt.Errorf("empty mapping file")
 	}
 
 	header := strings.Split(scanner.Text(), "\t")
@@ -40,16 +39,27 @@ func ParseTiny(file string) (*Mapping, error) {
 		header = strings.Fields(scanner.Text())
 	}
 
-	m := &Mapping{}
+	if scannerOut != nil {
+		scannerOut = scanner
+	}
 
 	// Detect version from header
-	switch header[0] {
-	case "v1":
-		m.Namespaces = header[1:]
-		return parseTinyV1(scanner, m)
-	default:
-		return nil, fmt.Errorf("unsupported tiny format header: %s", header[0])
+	if header[0] != "v1" {
+		return fmt.Errorf("unsupported tiny format header: %s", header[0])
 	}
+
+	return nil
+}
+
+func ParseTiny(file string) (*Mapping, error) {
+	var scanner *bufio.Scanner
+	err := DetectForTinyV1(file, scanner)
+	if err != nil {
+		return nil, err
+	}
+
+	m := &Mapping{}
+	return parseTinyV1(scanner, m)
 }
 
 // Parse flat Tiny V1 format

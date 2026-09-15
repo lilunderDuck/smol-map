@@ -16,6 +16,7 @@ func NewRootModel() RootModel {
 	return RootModel{
 		viewMap: map[int]tea.Model{
 			VIEW_ASK_FOR_TINY_MAPPING: NewAskForTinyMappingModel(),
+			VIEW_SEARCH_NAME:          NewSearchNameModel(),
 		},
 		currentView: VIEW_ASK_FOR_TINY_MAPPING,
 	}
@@ -34,7 +35,6 @@ func (this RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyPressMsg:
 		switch msg.String() {
 		case "q", "esc", "ctrl+c":
-			// this.quitting = true
 			return this, tea.Quit
 		default:
 			return this, nil

@@ -6,7 +6,7 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-const MAX_PAGE_WIDTH = 100
+const MAX_PAGE_WIDTH = 101
 
 var RoundedBorderBox = lipgloss.NewStyle().
 	BorderStyle(lipgloss.RoundedBorder()).
@@ -14,8 +14,6 @@ var RoundedBorderBox = lipgloss.NewStyle().
 	BorderLeft(true).
 	BorderBottom(true).
 	BorderRight(true).
-	PaddingLeft(2).
-	PaddingRight(2).
 	Width(MAX_PAGE_WIDTH)
 
 var CenterAligned = lipgloss.NewStyle().

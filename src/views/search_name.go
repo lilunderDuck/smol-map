@@ -14,18 +14,17 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-const VIEW_ASK_FOR_TINY_MAPPING = 0
+const VIEW_SEARCH_NAME = 1
 
-type AskForTinyMappingModel struct {
+type SearchNameModel struct {
 	// spinner  spinner.Model
 	textInput      textinput.Model
 	textInputError error
 }
 
-func NewAskForTinyMappingModel() AskForTinyMappingModel {
+func NewSearchNameModel() SearchNameModel {
 	ti := textinput.New()
-	ti.Placeholder = "Example: /path/to/tiny-v1-mapping.tiny"
-	// ti.SetVirtualCursor(false)
+	ti.Placeholder = "class_1031"
 	ti.Focus()
 	ti.CharLimit = 100
 	ti.SetWidth(100)
@@ -37,16 +36,16 @@ func NewAskForTinyMappingModel() AskForTinyMappingModel {
 		return tiny.DetectForTinyV1(inputPath, nil)
 	}
 
-	return AskForTinyMappingModel{
+	return SearchNameModel{
 		textInput: ti,
 	}
 }
 
-func (this AskForTinyMappingModel) Init() tea.Cmd {
+func (this SearchNameModel) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-func (this AskForTinyMappingModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (this SearchNameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 
 	switch msg := msg.(type) {
@@ -68,9 +67,7 @@ func (this AskForTinyMappingModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return this, cmd
 }
 
-var purple = lipgloss.Color("63")
-
-func (this AskForTinyMappingModel) View() tea.View {
+func (this SearchNameModel) View() tea.View {
 	var cursor *tea.Cursor
 	if !this.textInput.VirtualCursor() {
 		cursor = this.textInput.Cursor()
@@ -87,7 +84,7 @@ func (this AskForTinyMappingModel) View() tea.View {
 	return view
 }
 
-func (this AskForTinyMappingModel) headerView() string {
+func (this SearchNameModel) headerView() string {
 	var sb strings.Builder
 	fmt.Fprint(&sb, components.Render(
 		components.CenterAligned,
@@ -98,7 +95,18 @@ func (this AskForTinyMappingModel) headerView() string {
 	return sb.String()
 }
 
-func (this AskForTinyMappingModel) footerView() string {
+var shortcutMap = []components.ShortcutHint{
+	{
+		Keys:        []string{"ESC", "Ctrl+C"},
+		Description: "quit",
+	},
+	{
+		Keys:        []string{"Enter"},
+		Description: "confirm",
+	},
+}
+
+func (this SearchNameModel) footerView() string {
 	var sb strings.Builder
 	if this.textInputError != nil {
 		fmt.Fprintf(&sb, "%s%v%s\n\n", components.COLOR_RED, this.textInputError, components.F_RESET)
@@ -111,7 +119,7 @@ func (this AskForTinyMappingModel) footerView() string {
 	return sb.String()
 }
 
-func (this AskForTinyMappingModel) footerViewShortcutMap() []components.ShortcutHint {
+func (this SearchNameModel) footerViewShortcutMap() []components.ShortcutHint {
 	return []components.ShortcutHint{
 		{
 			Keys:        []string{"ESC", "Ctrl+C"},
