@@ -31,18 +31,7 @@ func (this RootModel) Init() tea.Cmd {
 }
 
 func (this RootModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyPressMsg:
-		switch msg.String() {
-		case "q", "esc", "ctrl+c":
-			return this, tea.Quit
-		default:
-			return this, nil
-		}
-
-	default:
-		return this.viewMap[this.currentView].Update(msg)
-	}
+	return this.viewMap[this.currentView].Update(msg)
 }
 
 func (this RootModel) View() tea.View {

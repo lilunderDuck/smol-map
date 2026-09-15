@@ -16,6 +16,12 @@ var RoundedBorderBox = lipgloss.NewStyle().
 	BorderRight(true).
 	Width(MAX_PAGE_WIDTH)
 
+var RoundedBorderHeader = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("205")).
+	PaddingLeft(1).
+	Width(MAX_PAGE_WIDTH)
+
 var CenterAligned = lipgloss.NewStyle().
 	AlignHorizontal(lipgloss.Center).
 	Width(MAX_PAGE_WIDTH)

@@ -6,7 +6,6 @@ package views
 import (
 	"fmt"
 	"smolmap/src/components"
-	"smolmap/src/tiny"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
@@ -18,23 +17,15 @@ const VIEW_SEARCH_NAME = 1
 
 type SearchNameModel struct {
 	// spinner  spinner.Model
-	textInput      textinput.Model
-	textInputError error
+	textInput textinput.Model
 }
 
 func NewSearchNameModel() SearchNameModel {
 	ti := textinput.New()
-	ti.Placeholder = "class_1031"
+	ti.Placeholder = "Search for something, example: class_1031"
 	ti.Focus()
 	ti.CharLimit = 100
 	ti.SetWidth(100)
-	ti.Validate = func(inputPath string) error {
-		if inputPath == "" {
-			return fmt.Errorf("You've provided an empty path...")
-		}
-
-		return tiny.DetectForTinyV1(inputPath, nil)
-	}
 
 	return SearchNameModel{
 		textInput: ti,
@@ -54,11 +45,6 @@ func (this SearchNameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "ctrl+c":
 			return this, tea.Quit
 		case "enter":
-			validationErr := this.textInput.Validate(this.textInput.Value())
-			if validationErr != nil {
-				this.textInputError = validationErr
-				break
-			}
 			return this, tea.Quit
 		}
 	}
@@ -75,8 +61,11 @@ func (this SearchNameModel) View() tea.View {
 	}
 
 	everything := components.Render(
-		components.RoundedBorderBox.BorderForeground(purple),
-		lipgloss.JoinVertical(lipgloss.Top, this.headerView(), this.textInput.View(), this.footerView()),
+		components.RoundedBorderBox.
+			PaddingLeft(1).
+			PaddingRight(1).
+			BorderForeground(purple),
+		lipgloss.JoinVertical(lipgloss.Top, this.headerView(), this.searchView(), this.footerView()),
 	)
 
 	view := tea.NewView(everything)
@@ -85,37 +74,23 @@ func (this SearchNameModel) View() tea.View {
 }
 
 func (this SearchNameModel) headerView() string {
-	var sb strings.Builder
-	fmt.Fprint(&sb, components.Render(
-		components.CenterAligned,
-		components.LOGO,
-	))
-	fmt.Fprintf(&sb, "\nEnter your .tiny v1 mapping path:")
-
-	return sb.String()
+	// var sb strings.Builder
+	// return sb.String()
+	return this.textInput.View()
 }
 
-var shortcutMap = []components.ShortcutHint{
-	{
-		Keys:        []string{"ESC", "Ctrl+C"},
-		Description: "quit",
-	},
-	{
-		Keys:        []string{"Enter"},
-		Description: "confirm",
-	},
+func (this SearchNameModel) searchView() string {
+	var sb strings.Builder
+	fmt.Fprintln(&sb, "")
+	fmt.Fprintln(&sb, components.MappingName("class_155", "SharedConstants", "net/minecraft/SharedConstants"))
+	fmt.Fprintln(&sb, "")
+	return sb.String()
 }
 
 func (this SearchNameModel) footerView() string {
 	var sb strings.Builder
-	if this.textInputError != nil {
-		fmt.Fprintf(&sb, "%s%v%s\n\n", components.COLOR_RED, this.textInputError, components.F_RESET)
-	} else {
-		fmt.Fprintf(&sb, "\n\n")
-	}
-
-	components.RenderShortcutHint(&sb, shortcutMap)
-
+	fmt.Fprintln(&sb, "")
+	components.RenderShortcutHint(&sb, this.footerViewShortcutMap())
 	return sb.String()
 }
 

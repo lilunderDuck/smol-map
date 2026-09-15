@@ -106,7 +106,7 @@ func (this AskForTinyMappingModel) footerView() string {
 		fmt.Fprintf(&sb, "\n\n")
 	}
 
-	components.RenderShortcutHint(&sb, shortcutMap)
+	components.RenderShortcutHint(&sb, this.footerViewShortcutMap())
 
 	return sb.String()
 }

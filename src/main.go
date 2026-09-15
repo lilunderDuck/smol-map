@@ -16,7 +16,7 @@ func main() {
 
 	root := views.NewRootModel()
 	if tinyMappingFile == "" {
-		root.GoTo(views.VIEW_ASK_FOR_TINY_MAPPING)
+		root.GoTo(views.VIEW_SEARCH_NAME)
 	}
 
 	// scanner := bufio.NewScanner(os.Stdin)
