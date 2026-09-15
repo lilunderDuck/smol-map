@@ -68,8 +68,6 @@ func (this AskForTinyMappingModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return this, cmd
 }
 
-var purple = lipgloss.Color("63")
-
 func (this AskForTinyMappingModel) View() tea.View {
 	var cursor *tea.Cursor
 	if !this.textInput.VirtualCursor() {
@@ -77,9 +75,13 @@ func (this AskForTinyMappingModel) View() tea.View {
 		cursor.Y += lipgloss.Height(this.headerView())
 	}
 
-	everything := components.Render(
-		components.RoundedBorderBox.BorderForeground(purple),
-		lipgloss.JoinVertical(lipgloss.Top, this.headerView(), this.textInput.View(), this.footerView()),
+	everything := components.RoundedBorderBox.Render(
+		lipgloss.JoinVertical(
+			lipgloss.Top,
+			this.headerView(),
+			this.textInput.View(),
+			this.footerView(),
+		),
 	)
 
 	view := tea.NewView(everything)

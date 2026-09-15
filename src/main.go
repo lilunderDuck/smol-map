@@ -11,13 +11,10 @@ import (
 
 func main() {
 	var tinyMappingFile string
-	flag.StringVar(&tinyMappingFile, "tiny", "", "path to .tiny v1 mapping")
+	flag.StringVar(&tinyMappingFile, "tiny", "<no .tiny file>", "path to .tiny v1 mapping")
 	flag.Parse()
 
-	root := views.NewRootModel()
-	if tinyMappingFile == "" {
-		root.GoTo(views.VIEW_SEARCH_NAME)
-	}
+	root := views.NewSearchNameModel(tinyMappingFile)
 
 	// scanner := bufio.NewScanner(os.Stdin)
 	// fmt.Print("Enter any intermediary name:")
