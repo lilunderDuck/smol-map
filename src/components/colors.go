@@ -5,7 +5,6 @@ import (
 	"strings"
 )
 
-const MAX_PAGE_WIDTH = 80
 const (
 	F_RESET       = "\x1b[0m"
 	COLOR_RED     = "\x1b[31m"

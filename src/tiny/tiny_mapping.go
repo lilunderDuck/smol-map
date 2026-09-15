@@ -3,7 +3,6 @@ package tiny
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 )
@@ -24,7 +23,12 @@ type MemberMapping struct {
 	Names      []string
 }
 
-func ParseTiny(r io.Reader) (*Mapping, error) {
+func ParseTiny(file string) (*Mapping, error) {
+	r, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+
 	scanner := bufio.NewScanner(r)
 
 	if !scanner.Scan() {
@@ -84,19 +88,4 @@ func parseTinyV1(scanner *bufio.Scanner, m *Mapping) (*Mapping, error) {
 		}
 	}
 	return m, scanner.Err()
-}
-
-func main() {
-	file, err := os.Open("mappings.tiny")
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
-
-	mapping, err := ParseTiny(file)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Printf("Parsed %d classes across namespaces: %v\n", len(mapping.Classes), mapping.Namespaces)
 }

@@ -5,6 +5,7 @@ package views
 
 import (
 	"fmt"
+	"smolmap/src/components"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
@@ -16,18 +17,28 @@ const VIEW_ASK_FOR_TINY_MAPPING = 0
 
 type AskForTinyMappingModel struct {
 	// spinner  spinner.Model
-	textInput textinput.Model
+	textInput      textinput.Model
+	textInputError error
 }
 
 func NewAskForTinyMappingModel() AskForTinyMappingModel {
 	ti := textinput.New()
-	ti.Placeholder = "/path/to/tiny-v1-mapping.tiny"
-	ti.SetVirtualCursor(false)
+	ti.Placeholder = "Example: /path/to/tiny-v1-mapping.tiny"
+	// ti.SetVirtualCursor(false)
 	ti.Focus()
-	ti.CharLimit = 156
-	ti.SetWidth(20)
+	ti.CharLimit = 100
+	ti.SetWidth(100)
+	ti.Validate = func(inputPath string) error {
+		if inputPath == "" {
+			return fmt.Errorf("You've provided an empty path...")
+		}
 
-	return AskForTinyMappingModel{textInput: ti}
+		return nil
+	}
+
+	return AskForTinyMappingModel{
+		textInput: ti,
+	}
 }
 
 func (this AskForTinyMappingModel) Init() tea.Cmd {
@@ -43,6 +54,11 @@ func (this AskForTinyMappingModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "ctrl+c":
 			return this, tea.Quit
 		case "enter":
+			validationErr := this.textInput.Validate(this.textInput.Value())
+			if validationErr != nil {
+				this.textInputError = validationErr
+				break
+			}
 			return this, tea.Quit
 		}
 	}
@@ -60,20 +76,47 @@ func (this AskForTinyMappingModel) View() tea.View {
 		cursor.Y += lipgloss.Height(this.headerView())
 	}
 
-	var sb strings.Builder
-	fmt.Fprintf(&sb, "%s from %s\n")
+	everything := components.Render(
+		components.RoundedBorderBox.BorderForeground(purple),
+		lipgloss.JoinVertical(lipgloss.Top, this.headerView(), this.textInput.View(), this.footerView()),
+	)
 
-	str := lipgloss.JoinVertical(lipgloss.Top, this.headerView(), this.textInput.View(), this.footerView())
-
-	view := tea.NewView(str)
+	view := tea.NewView(everything)
 	view.Cursor = cursor
 	return view
 }
 
-func (m AskForTinyMappingModel) headerView() string {
-	return "What's your favorite Pokémon?\n"
+func (this AskForTinyMappingModel) headerView() string {
+	var sb strings.Builder
+	fmt.Fprint(&sb, components.Render(
+		components.CenterAligned,
+		components.LOGO,
+	))
+	fmt.Fprintf(&sb, "\nEnter your .tiny v1 mapping path:")
+
+	return sb.String()
 }
 
-func (m AskForTinyMappingModel) footerView() string {
-	return "\n(esc to quit)"
+var shortcutMap = []components.ShortcutHint{
+	{
+		Keys:        []string{"ESC", "Ctrl+C"},
+		Description: "quit",
+	},
+	{
+		Keys:        []string{"Enter"},
+		Description: "confirm",
+	},
+}
+
+func (this AskForTinyMappingModel) footerView() string {
+	var sb strings.Builder
+	if this.textInputError != nil {
+		fmt.Fprintf(&sb, "%s%v%s\n\n", components.COLOR_RED, this.textInputError, components.F_RESET)
+	} else {
+		fmt.Fprintf(&sb, "\n\n")
+	}
+
+	components.RenderShortcutHint(&sb, shortcutMap)
+
+	return sb.String()
 }
