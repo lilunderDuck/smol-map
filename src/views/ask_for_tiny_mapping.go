@@ -6,7 +6,8 @@ package views
 import (
 	"fmt"
 	"smolmap/src/components"
-	"smolmap/src/tiny"
+
+	// "smolmap/src/tiny"
 	"strings"
 
 	"charm.land/bubbles/v2/textinput"
@@ -34,7 +35,8 @@ func NewAskForTinyMappingModel() AskForTinyMappingModel {
 			return fmt.Errorf("You've provided an empty path...")
 		}
 
-		return tiny.DetectForTinyV1(inputPath, nil)
+		// return tiny.DetectForTinyV1(inputPath, nil)
+		return nil
 	}
 
 	return AskForTinyMappingModel{

@@ -17,11 +17,13 @@ import (
 const VIEW_SEARCH_NAME = 1
 
 type SearchNameModel struct {
-	// spinner  spinner.Model
 	textInput     textinput.Model
-	mapping       *tiny.Mapping
-	mappingResult *tiny.ClassMapping
+	mapping       *tiny.MappingDatabase
+	mappingResult []tiny.Mapping
+	isHintShown   bool
 }
+
+var EMPTY_RESULT = []tiny.Mapping{}
 
 func NewSearchNameModel(tinyMappingFile string) SearchNameModel {
 	mapping, err := tiny.ParseTiny(tinyMappingFile)
@@ -30,14 +32,16 @@ func NewSearchNameModel(tinyMappingFile string) SearchNameModel {
 	}
 
 	ti := textinput.New()
-	ti.Placeholder = "Search for something, example: class_1031"
+	ti.Placeholder = "Search for any class, method or field."
 	ti.Focus()
 	ti.CharLimit = 100
-	ti.SetWidth(100)
+	ti.SetWidth(components.MAX_PAGE_WIDTH)
 
 	return SearchNameModel{
-		textInput: ti,
-		mapping:   mapping,
+		textInput:     ti,
+		mapping:       mapping,
+		mappingResult: EMPTY_RESULT,
+		isHintShown:   false,
 	}
 }
 
@@ -54,15 +58,24 @@ func (this SearchNameModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc", "ctrl+c":
 			return this, tea.Quit
 		case "enter":
-			mappingResult, ok := this.mapping.FindClass(this.textInput.Value())
-			if ok {
-				this.mappingResult = mappingResult
-			}
+			this.searchMapping()
+		case "/":
+			this.isHintShown = !this.isHintShown
+			return this, cmd
 		}
 	}
 
 	this.textInput, cmd = this.textInput.Update(msg)
 	return this, cmd
+}
+
+func (this *SearchNameModel) searchMapping() {
+	mappingResult, ok := this.mapping.Lookup[this.textInput.Value()]
+	if ok {
+		this.mappingResult = mappingResult
+	} else {
+		this.mappingResult = EMPTY_RESULT
+	}
 }
 
 func (this SearchNameModel) View() tea.View {
@@ -88,22 +101,29 @@ func (this SearchNameModel) View() tea.View {
 }
 
 func (this SearchNameModel) headerView() string {
-	// var sb strings.Builder
-	// return sb.String()
 	return this.textInput.View()
 }
 
+var searchContentView = lipgloss.NewStyle().
+	Width(components.MAX_PAGE_WIDTH).
+	Height(15)
+
 func (this SearchNameModel) searchView() string {
 	var sb strings.Builder
-	fmt.Fprintln(&sb, "")
-	if this.mappingResult != nil {
-		remapped := this.mappingResult.GetNamespacesMap(this.mapping.Namespaces)
-		fmt.Fprintf(&sb, "%+v\n", remapped)
+
+	fmt.Fprintln(&sb)
+	if this.isHintShown {
+		fmt.Fprintln(&sb, "If you want to search nested class, you can search like this: class_2841$class_6563\n")
 	} else {
-		fmt.Fprintf(&sb, "Nothing here...\n")
+		if len(this.mappingResult) != 0 {
+			components.RenderMappingName(&sb, &this.mappingResult[0], this.mapping)
+		} else {
+			fmt.Fprintf(&sb, "Nothing here...\n")
+		}
+		fmt.Fprintln(&sb)
 	}
-	fmt.Fprintln(&sb, "")
-	return sb.String()
+
+	return searchContentView.Render(sb.String())
 }
 
 func (this SearchNameModel) footerView() string {
@@ -122,6 +142,10 @@ func (this SearchNameModel) footerViewShortcutMap() []components.ShortcutHint {
 		{
 			Keys:        []string{"Enter"},
 			Description: "confirm search",
+		},
+		{
+			Keys:        []string{"/"},
+			Description: "toggle hint",
 		},
 	}
 }
